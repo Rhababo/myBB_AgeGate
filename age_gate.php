@@ -151,9 +151,6 @@ function age_gate_update_age()
     // Fetch all user birthdays (if set to default)
     $query = $db->simple_select('users', 'uid, birthday', 'age = 18');
 
-    //print to console for debugging
-    echo "<script>console.log('query: made update age')</script>";
-
     while($user = $db->fetch_array($query)) {
         $age = calculate_age($user['birthday']);
         if($age != $user['age']){
@@ -168,8 +165,6 @@ function calculate_age($bday)
     //if $bday is not in the correct format, return 18
     if(!strtotime($bday))
     {
-        //print to the console for debugging
-        echo "<script>console.log('invalid bday: " . $bday . "')</script>";
         return 18;
     }
     return date_diff(date_create($bday), date_create('today'))->y;
@@ -185,13 +180,9 @@ function age_gate_update_dbflag()
 {
     global $db, $mybb;
 
-    //debug print to console
-    echo "<script>console.log('age_gate_update_dbflag: called')</script>";
     //update the age for all users
     age_gate_update_age();
 
-    //debug print to console
-    echo "<script>console.log('age_gate_update_age: exited')</script>";
     $locked_group_query = get_locked_usergroup_query();
     $granfathered_query_pass = "";
     $granfathered_query_fail = "";
@@ -236,28 +227,20 @@ function get_locked_usergroup_query()
     //admin should be 4, but check just in case
     $admin_gid_query = $db->simple_select('usergroups', 'gid', "cancp = 1");
 
-    //debug print to console
-    echo "<script>console.log('locked_group_query: admin_gid_query completed ')</script>";
     $admin_groups = $db->fetch_array($admin_gid_query, 'gid');
 
-    //debug print to console
-    echo "<script>console.log('locked_group_query: admin_groups completed ')</script>";
     if(in_array($mybb->settings['TooYoungUserGroup'], $admin_groups))
     {
         //set the TooYoungUserGroup to Registered Users if it is an admin group
         $db->update_query('settings', array('value' => 2), "name = 'TooYoungUserGroup'");
         rebuild_settings();
 
-        //debug print to console
-        echo "<script>console.log('locked_group_query: rebuild_settings completed ')</script>";
     }
 
     //get the usergroup id for banned users, admins, or those awaiting activation (this gid may be different for your forum).
     $query = $db->simple_select('usergroups', 'gid', "isbannedgroup = 1 OR cancp = 1 OR gid = 5");
     $locked_groups = $db->fetch_array($query, 'gid');
 
-    //debug print to console
-    echo "<script>console.log('locked_group_query: locked_groups_query completed ')</script>";
 
     $locked_group_query_parts = [];
     foreach($locked_groups as $group)
@@ -267,8 +250,6 @@ function get_locked_usergroup_query()
     //convert to string for update_query
     $locked_group_query = implode('', $locked_group_query_parts);
 
-    //debug print to console
-    echo "<script>console.log('locked_group_query: '.$locked_group_query)</script>";
     return $locked_group_query;
 }
 
@@ -296,8 +277,6 @@ function age_gate_update_user_group()
         . $locked_group_query
     );
 
-    //debug print to console
-    echo "<script>console.log('age_gate_update_user_group: called')</script>";
     $cache->update_usergroups();
 }
 
